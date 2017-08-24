@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <url>
+    <loc>http://blog.solf.me/compile-nginx-php-mysql-on-centos-lnmp/</loc>
+    
+    <lastmod>2017-08-24T12:32:24.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.solf.me/install-fiber-channel-in-openfiler-2-99/</loc>
+    
+    <lastmod>2017-08-24T12:32:24.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.solf.me/cookie-session-data-transfer-and-sql-injection/</loc>
+    
+    <lastmod>2017-08-24T12:23:12.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.solf.me/hello-world/</loc>
+    
+    <lastmod>2017-08-24T12:23:12.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.solf.me/about/index.html</loc>
+    
+    <lastmod>2017-08-24T12:23:12.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.solf.me/tags/index.html</loc>
+    
+    <lastmod>2017-08-24T12:23:12.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.solf.me/categories/index.html</loc>
+    
+    <lastmod>2017-08-24T12:23:12.000Z</lastmod>
+    
+  </url>
+  
+</urlset>

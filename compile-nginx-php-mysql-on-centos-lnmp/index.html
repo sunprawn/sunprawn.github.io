@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next mist" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="linux,lnmp,mysql,nginx,php,vps,web hosting," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="Since I’ve chose to run a low-memory VPS for my blog, I decide to install the ‘lnmp’ manually. Here I will show how to do it (install Nginx 1.0.15 + PHP 5.3.12 + MySQL 5.1.62 + eAccelerator 0.9.6.1).">
+<meta name="keywords" content="linux,lnmp,mysql,nginx,php,vps,web hosting">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Install Nginx 1.0.15 + PHP 5.3.12 + MySQL 5.1.62 on CentOS 6.2">
+<meta property="og:url" content="http://blog.solf.me/compile-nginx-php-mysql-on-centos-lnmp/index.html">
+<meta property="og:site_name" content="Solf">
+<meta property="og:description" content="Since I’ve chose to run a low-memory VPS for my blog, I decide to install the ‘lnmp’ manually. Here I will show how to do it (install Nginx 1.0.15 + PHP 5.3.12 + MySQL 5.1.62 + eAccelerator 0.9.6.1).">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2017-08-24T12:32:24.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Install Nginx 1.0.15 + PHP 5.3.12 + MySQL 5.1.62 on CentOS 6.2">
+<meta name="twitter:description" content="Since I’ve chose to run a low-memory VPS for my blog, I decide to install the ‘lnmp’ manually. Here I will show how to do it (install Nginx 1.0.15 + PHP 5.3.12 + MySQL 5.1.62 + eAccelerator 0.9.6.1).">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.2',
+    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: false,
+    duoshuo: {
+      userId: 'undefined',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: 'D9ZAJJELF1',
+      apiKey: 'c1b017133a91550d14711217ef2884d7',
+      indexName: 'solfy',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://blog.solf.me/compile-nginx-php-mysql-on-centos-lnmp/"/>
+
+
+
+
+
+  <title>Install Nginx 1.0.15 + PHP 5.3.12 + MySQL 5.1.62 on CentOS 6.2 | Solf</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-24293351-2', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Solf</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description"></h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            Search
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.solf.me/compile-nginx-php-mysql-on-centos-lnmp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Solf">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Solf">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Install Nginx 1.0.15 + PHP 5.3.12 + MySQL 5.1.62 on CentOS 6.2</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2012-05-20T11:18:29+10:00">
+                20-05-2012
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Sharing/" itemprop="url" rel="index">
+                    <span itemprop="name">Sharing</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/compile-nginx-php-mysql-on-centos-lnmp/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="compile-nginx-php-mysql-on-centos-lnmp/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Since I’ve chose to run a low-memory VPS for my blog, I decide to install the ‘lnmp’ manually. Here I will show how to do it (install Nginx 1.0.15 + PHP 5.3.12 + MySQL 5.1.62 + eAccelerator 0.9.6.1).</p>
+<h1 id="Prepare"><a href="#Prepare" class="headerlink" title="Prepare"></a>Prepare</h1><p>1. Of course a pc with Internet connection, virtual machine is the best option if this is the first time.</p>
+<p>2. Flush ‘<em>iptables</em>’ if necessary, and shut down SELINUX</p>
+<p>3. Download directory is <code>/usr/local/src</code></p>
+<h1 id="Installation"><a href="#Installation" class="headerlink" title="Installation"></a>Installation</h1><p>First, download all source code<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/src</div><div class="line">wget http://nginx.org/download/nginx-1.0.15.tar.gz</div><div class="line">wget http://au.php.net/get/php-5.3.12.tar.gz/from/us.php.net/mirror</div><div class="line">wget http://mysql.mirror.kangaroot.net/Downloads/MySQL-5.1/mysql-5.1.62.tar.gz</div><div class="line">wget http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz</div><div class="line">wget http://downloads.sourceforge.net/mcrypt/libmcrypt-2.5.8.tar.gz?modtime=1171868460&amp;big_mirror=0</div><div class="line">wget http://downloads.sourceforge.net/mcrypt/mcrypt-2.6.8.tar.gz?modtime=1194463373&amp;big_mirror=0</div><div class="line">wget http://downloads.sourceforge.net/mhash/mhash-0.9.9.9.tar.gz?modtime=1175740843&amp;big_mirror=0</div><div class="line">wget http://downloads.sourceforge.net/project/pcre/pcre/8.30/pcre-8.30.tar.gz?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fpcre%2Ffiles%2Fpcre%2F8.30%2F&amp;ts=1335184494&amp;use_mirror=aarnet</div><div class="line">wget http://downloads.sourceforge.net/project/eaccelerator/eaccelerator/eAccelerator%200.9.6.1/eaccelerator-0.9.6.1.tar.bz2?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Feaccelerator%2Ffiles%2Feaccelerator%2FeAccelerator%25200.9.6.1%2F&amp;ts=1335276559&amp;use_mirror=waix</div></pre></td></tr></table></figure></p>
+<p>Then install some libaries, they should be libiconv，libmcrypt，mhash， mcrypt and pcre</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div></pre></td><td class="code"><pre><div class="line">tar zxvf libiconv-1.14.tar.gz</div><div class="line"><span class="built_in">cd</span> libiconv-1.14</div><div class="line">./configure --prefix=/usr/<span class="built_in">local</span></div><div class="line">make</div><div class="line">make install</div><div class="line"></div><div class="line"><span class="built_in">cd</span> ../</div><div class="line">tar zxvf libmcrypt-2.5.8.tar.gz</div><div class="line"><span class="built_in">cd</span> libmcrypt-2.5.8/</div><div class="line">./configure</div><div class="line">make</div><div class="line">make install</div><div class="line">/sbin/ldconfig</div><div class="line"><span class="built_in">cd</span> libltdl/</div><div class="line">./configure --<span class="built_in">enable</span>-ltdl-install</div><div class="line">make</div><div class="line">make install</div><div class="line"><span class="built_in">cd</span> ../../</div><div class="line"></div><div class="line">tar zxvf mhash-0.9.9.9.tar.gz</div><div class="line"><span class="built_in">cd</span> mhash-0.9.9.9/</div><div class="line">./configure</div><div class="line">make</div><div class="line">make install</div><div class="line"><span class="built_in">cd</span> ../</div><div class="line"></div><div class="line">ln -s /usr/<span class="built_in">local</span>/lib/libmcrypt.la /usr/lib/libmcrypt.la</div><div class="line">ln -s /usr/<span class="built_in">local</span>/lib/libmcrypt.so /usr/lib/libmcrypt.so</div><div class="line">ln -s /usr/<span class="built_in">local</span>/lib/libmcrypt.so.4 /usr/lib/libmcrypt.so.4</div><div class="line">ln -s /usr/<span class="built_in">local</span>/lib/libmcrypt.so.4.4.8 /usr/lib/libmcrypt.so.4.4.8</div><div class="line">ln -s /usr/<span class="built_in">local</span>/lib/libmhash.a /usr/lib/libmhash.a</div><div class="line">ln -s /usr/<span class="built_in">local</span>/lib/libmhash.la /usr/lib/libmhash.la</div><div class="line">ln -s /usr/<span class="built_in">local</span>/lib/libmhash.so /usr/lib/libmhash.so</div><div class="line">ln -s /usr/<span class="built_in">local</span>/lib/libmhash.so.2 /usr/lib/libmhash.so.2</div><div class="line">ln -s /usr/<span class="built_in">local</span>/lib/libmhash.so.2.0.1 /usr/lib/libmhash.so.2.0.1</div><div class="line"></div><div class="line">tar zxvf mcrypt-2.6.8.tar.gz</div><div class="line"><span class="built_in">cd</span> mcrypt-2.6.8/</div><div class="line">/sbin/ldconfig</div><div class="line">./configure</div><div class="line">make</div><div class="line">make install</div><div class="line"><span class="built_in">cd</span> ../</div><div class="line"></div><div class="line">tar zxvf pcre-8.30.tar.gz</div><div class="line"><span class="built_in">cd</span> pcre-8.30</div><div class="line">./configure</div><div class="line">make &amp;&amp; make install</div><div class="line"><span class="built_in">cd</span> ../</div></pre></td></tr></table></figure>
+<h3 id="Install-MySQL"><a href="#Install-MySQL" class="headerlink" title="Install MySQL"></a>Install MySQL</h3><a id="more"></a>
+<p>First, add group in OS for mysql application<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">groupadd mysql</div><div class="line">useradd -s /sbin/nologin -M -g mysql mysql</div></pre></td></tr></table></figure></p>
+<p>Next step is unzip, compile and install. Notice that the LNMP would be intall in <code>/usr/local/webserver</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">./configure --prefix=/usr/<span class="built_in">local</span>/webserver/mysql/ --<span class="built_in">enable</span>-assembler --with-extra-charsets=complex --<span class="built_in">enable</span>-thread-safe-client --with-big-tables --with-readline --with-ssl --with-embedded-server --<span class="built_in">enable</span>-local-infile --with-plugins=partition,innobase,myisammrg</div><div class="line">make &amp;&amp; make install</div></pre></td></tr></table></figure>
+<p>Then the following script is used to change the directory permissions, make mysql auto start when boot, and for easy management, <em>service</em> command will be use to manipulate mysql<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">chmod +w /usr/<span class="built_in">local</span>/webserver/mysql</div><div class="line">chown -R mysql:mysql /usr/<span class="built_in">local</span>/webserver/mysql</div><div class="line"></div><div class="line">/usr/<span class="built_in">local</span>/webserver/mysql/bin/mysql_install_db --basedir=/usr/<span class="built_in">local</span>/webserver/mysql --user=mysql</div><div class="line">cp -f /usr/<span class="built_in">local</span>/webserver/mysql/share/mysql/my-medium.cnf /etc/my.cnf</div><div class="line">sed -i <span class="string">'s/skip-locking/skip-external-locking/g'</span> /etc/my.cnf</div><div class="line">sed -i <span class="string">'s:#innodb:innodb:g'</span> /etc/my.cnf</div><div class="line">cp /usr/<span class="built_in">local</span>/webserver/mysql/share/mysql/mysql.server /etc/init.d/mysqld</div><div class="line">chmod 755 /etc/init.d/mysqld </div><div class="line">ln -s /usr/<span class="built_in">local</span>/webserver/mysql/lib/mysql /usr/lib/mysql</div><div class="line">ln -s /usr/<span class="built_in">local</span>/webserver/mysql/insclude/mysql /usr/include/mysql</div><div class="line">chkconfig mysqld on</div></pre></td></tr></table></figure></p>
+<p>Restart the machine, mysql should be run properly. Follow by setting the <em>root</em> password</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">/usr/<span class="built_in">local</span>/webserver/mysql/bin/mysqladmin -u root password ‘root<span class="string">'</span></div><div class="line"><span class="string"></span></div><div class="line"><span class="string">cat  &gt; /tmp/mysql_sec_script&lt;&lt;EOF</span></div><div class="line"><span class="string">use mysql;</span></div><div class="line"><span class="string">delete from user where not (user='</span>root<span class="string">') ;</span></div><div class="line"><span class="string">delete from user where user='</span>root<span class="string">' and password='</span><span class="string">';</span></div><div class="line"><span class="string">drop database test;</span></div><div class="line"><span class="string">DROP USER '</span><span class="string">'@'</span>%<span class="string">';</span></div><div class="line"><span class="string">flush privileges;</span></div><div class="line"><span class="string">EOF</span></div><div class="line"><span class="string"></span></div><div class="line"><span class="string">/usr/local/webserver/mysql/bin/mysql -u root –p'</span>root<span class="string">' -h localhost &lt; /tmp/mysql_sec_script</span></div><div class="line"><span class="string"></span></div><div class="line"><span class="string">rm -f /tmp/mysql_sec_script</span></div><div class="line"><span class="string"></span></div><div class="line"><span class="string">/etc/init.d/mysqld restart</span></div><div class="line"><span class="string">/etc/init.d/mysqld stop</span></div></pre></td></tr></table></figure>
+<h3 id="Install-PHP"><a href="#Install-PHP" class="headerlink" title="Install PHP"></a>Install PHP</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/src</div><div class="line">tar zvxf php-5.3.12.tar.gz</div><div class="line"><span class="built_in">cd</span> php-5.3.12</div><div class="line">mkdir -p /usr/<span class="built_in">local</span>/webserver/php</div><div class="line"></div><div class="line">./configure --prefix=/usr/<span class="built_in">local</span>/webserver/php --with-config-file-path=/usr/<span class="built_in">local</span>/webserver/php/etc --with-mysql=/usr/<span class="built_in">local</span>/webserver/mysql --with-mysqli=/usr/<span class="built_in">local</span>/webserver/mysql/bin/mysql_config --with-iconv-dir=/usr/<span class="built_in">local</span> --with-freetype-dir --with-jpeg-dir --with-png-dir --with-zlib --with-libxml-dir=/usr --<span class="built_in">enable</span>-xml --<span class="built_in">disable</span>-rpath --<span class="built_in">enable</span>-discard-path --<span class="built_in">enable</span>-safe-mode --<span class="built_in">enable</span>-bcmath --<span class="built_in">enable</span>-shmop --<span class="built_in">enable</span>-sysvsem --<span class="built_in">enable</span>-inline-optimization --with-curl --with-curlwrappers --<span class="built_in">enable</span>-mbregex --<span class="built_in">enable</span>-fpm --<span class="built_in">enable</span>-mbstring --with-mcrypt --with-gd --<span class="built_in">enable</span>-gd-native-ttf --with-openssl --with-mhash --<span class="built_in">enable</span>-pcntl --<span class="built_in">enable</span>-sockets  --with-xmlrpc --<span class="built_in">enable</span>-zip --<span class="built_in">enable</span>-soap</div><div class="line">make ZEND_EXTRA_LIBS=<span class="string">'-liconv'</span></div><div class="line">make install</div><div class="line">cp php.ini-production /usr/<span class="built_in">local</span>/webserver/php/etc/php.ini</div><div class="line"></div><div class="line">cp sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm <span class="comment">#fpm is embeded in php 5.3 and above</span></div><div class="line">chmod +x /etc/init.d/php-fpm</div><div class="line">chkconfig php-fpm on <span class="comment">#auto start</span></div><div class="line">cp /usr/<span class="built_in">local</span>/webserver/php/etc/php-fpm.conf.default /usr/<span class="built_in">local</span>/webserver/php/etc/php-fpm.conf</div></pre></td></tr></table></figure>
+<p>Modify php-fpm.conf, change the user and group to following:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">user = www</div><div class="line">group = www</div></pre></td></tr></table></figure>
+<p>Then install eAccelerator</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">cd</span> ../</div><div class="line">tar jxvf eaccelerator-0.9.6.1.tar.bz2</div><div class="line"><span class="built_in">cd</span> eaccelerator-0.9.6.1</div><div class="line">/usr/<span class="built_in">local</span>/webserver/php/bin/phpize <span class="comment">#mark down the output</span></div><div class="line">./configure --<span class="built_in">enable</span>-eaccelerator=shared --with-php-config=/usr/<span class="built_in">local</span>/webserver/php/bin/php-config</div><div class="line">make</div><div class="line">make install</div><div class="line"><span class="built_in">cd</span> ../</div></pre></td></tr></table></figure>
+<p>Modify <code>php.ini</code> (located in /usr/local/webserver/php/etc/php.ini), change <code>extension_dir = “./”</code> to <code>extension_dir = &quot;/usr/local/webserver/php/lib/php/extensions/no-debug-non-zts-20090626/&quot;</code></p>
+<p>Configure eAccelerator:<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">mkdir -p /usr/<span class="built_in">local</span>/webserver/eaccelerator_cache</div><div class="line">vi /usr/<span class="built_in">local</span>/webserver/php/etc/php.ini</div></pre></td></tr></table></figure></p>
+<p>At the end of the file, input the following content:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">[eaccelerator]</div><div class="line">zend_extension=&apos;/usr/local/webserver/php/lib/php/extensions/no-debug-non-zts-20090626/eaccelerator.so&apos;</div><div class="line">eaccelerator.shm_size=&apos;64&apos;</div><div class="line">eaccelerator.cache_dir=&apos;/usr/local/webserver/eaccelerator_cache&apos;</div><div class="line">eaccelerator.enable=&apos;1&apos;</div><div class="line">eaccelerator.optimizer=&apos;1&apos;</div><div class="line">eaccelerator.check_mtime=&apos;1&apos;</div><div class="line">eaccelerator.debug=&apos;0&apos;</div><div class="line">eaccelerator.filter=&apos;&apos;</div><div class="line">eaccelerator.shm_max=&apos;0&apos;</div><div class="line">eaccelerator.shm_ttl=&apos;3600&apos;</div><div class="line">eaccelerator.shm_prune_period=&apos;3600&apos;</div><div class="line">eaccelerator.shm_only=&apos;0&apos;</div><div class="line">eaccelerator.compress=&apos;1&apos;</div><div class="line">eaccelerator.compress_level=&apos;9&apos;</div></pre></td></tr></table></figure></p>
+<h3 id="Install-Nginx"><a href="#Install-Nginx" class="headerlink" title="Install Nginx"></a>Install Nginx</h3><p>First of course add appropriate user group<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">groupadd www</div><div class="line">useradd -s /sbin/nologin -g www www <span class="comment">#this make www user cant login</span></div><div class="line">mkdir -p /home/wwwroot <span class="comment">#to store all domain configuration files</span></div><div class="line">chmod +w /home/wwwroot</div><div class="line">mkdir -p /home/wwwlogs</div><div class="line">chmod 755 /home/wwwlogs</div><div class="line">chown -R www:www /home/wwwroot</div></pre></td></tr></table></figure></p>
+<p>Install Nginx<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">tar zxvf nginx-1.0.15.tar.gz</div><div class="line"><span class="built_in">cd</span> nginx-1.0.15/</div><div class="line">./configure --user=www --group=www --prefix=/usr/<span class="built_in">local</span>/webserver/nginx --with-http_stub_status_module --with-http_ssl_module --with-http_gzip_static_module</div><div class="line">make &amp;&amp; make install</div><div class="line">mkdir /usr/<span class="built_in">local</span>/webserver/nginx/conf/vhost/ <span class="comment">#used to config domain</span></div></pre></td></tr></table></figure></p>
+<p>Make necessary modification to nginx configuration file<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">rm -f /usr/<span class="built_in">local</span>/webserver/nginx/conf/nginx.conf</div><div class="line">vi /usr/<span class="built_in">local</span>/webserver/nginx/conf/nginx.conf</div></pre></td></tr></table></figure></p>
+<p>input the following<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div></pre></td><td class="code"><pre><div class="line">user  www www;</div><div class="line">worker_processes 1;</div><div class="line">error_log  /home/wwwlogs/nginx_error.log  crit;</div><div class="line">pid        /usr/local/webserver/nginx/logs/nginx.pid;</div><div class="line">#Specifies the value for maximum file descriptors that can be opened by this process.</div><div class="line">worker_rlimit_nofile 51200;</div><div class="line">events</div><div class="line">&#123;</div><div class="line">use epoll;</div><div class="line">worker_connections 51200;</div><div class="line">&#125;</div><div class="line">http</div><div class="line">&#123;</div><div class="line">include       mime.types;</div><div class="line">default_type  application/octet-stream;</div><div class="line">server_names_hash_bucket_size 128;</div><div class="line">client_header_buffer_size 32k;</div><div class="line">large_client_header_buffers 4 32k;</div><div class="line">client_max_body_size 8m;</div><div class="line">sendfile on;</div><div class="line">tcp_nopush     on;</div><div class="line">keepalive_timeout 60;</div><div class="line">tcp_nodelay on;</div><div class="line">fastcgi_connect_timeout 300;</div><div class="line">fastcgi_send_timeout 300;</div><div class="line">fastcgi_read_timeout 300;</div><div class="line">fastcgi_buffer_size 64k;</div><div class="line">fastcgi_buffers 4 64k;</div><div class="line">fastcgi_busy_buffers_size 128k;</div><div class="line">fastcgi_temp_file_write_size 256k;</div><div class="line">gzip on;</div><div class="line">gzip_min_length  1k;</div><div class="line">gzip_buffers     4 16k;</div><div class="line">gzip_http_version 1.0;</div><div class="line">gzip_comp_level 2;</div><div class="line">gzip_types       text/plain application/x-javascript text/css application/xml;</div><div class="line">gzip_vary on;</div><div class="line">#limit_zone  crawler  $binary_remote_addr  10m;</div><div class="line">#log format</div><div class="line">log_format  access  &apos;$remote_addr - $remote_user [$time_local] &apos;$request&apos; &apos;</div><div class="line">&apos;$status $body_bytes_sent &apos;$http_referer&apos; &apos;</div><div class="line">&apos;&apos;$http_user_agent&apos; $http_x_forwarded_for&apos;;</div><div class="line">include vhost/*.conf;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>This only is basic config for nginx, domain configuration for each domain (if you are hosting multi-domain in a server) would be the next:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/webserver/nginx/conf/vhost</div><div class="line">vi domain.com.conf</div></pre></td></tr></table></figure>
+<p>input the following. After that php could be supported by nginx. Change <code>domain.com</code> based on you domain name.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">server</div><div class="line">&#123;</div><div class="line">    listen       80;</div><div class="line">    server_name www.domain.com domain.com;</div><div class="line">    index index.html index.htm index.php default.html default.htm default.php;</div><div class="line">    root  /home/wwwroot/domain.com/www;</div><div class="line">    location ~ .*\.(php|php5)?$</div><div class="line">    &#123;</div><div class="line">        fastcgi_pass  127.0.0.1:9000;</div><div class="line">        fastcgi_index index.php;</div><div class="line">        include fastcgi.conf;</div><div class="line">    &#125;</div><div class="line">    location ~ .*\.(gif|jpg|jpeg|png|bmp|swf)$</div><div class="line">    &#123;</div><div class="line">        expires      30d;</div><div class="line">    &#125;</div><div class="line">    location ~ .*\.(js|css)?$</div><div class="line">    &#123;</div><div class="line">        expires      12h;</div><div class="line">    &#125;</div><div class="line">    access_log  /home/wwwlogs/domain.com.access.log;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Create root directory for the domain:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mkdir -p /home/wwwroot/domain.com/www/</div></pre></td></tr></table></figure>
+<p>After all done, create a manage script for nginx ( run <em>$ vi /etc/init.d/nginx</em> first):</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#! /bin/sh</span></div><div class="line"><span class="comment"># chkconfig: 2345 55 25</span></div><div class="line"><span class="comment"># Description: Startup script for nginx webserver on Debian. Place in /etc/init.d and</span></div><div class="line"><span class="comment"># run 'update-rc.d -f nginx defaults', or use the appropriate command on your</span></div><div class="line"><span class="comment"># distro. For CentOS/Redhat run: 'chkconfig --add nginx'</span></div><div class="line"><span class="comment">### BEGIN INIT INFO</span></div><div class="line"><span class="comment"># Provides:          nginx</span></div><div class="line"><span class="comment"># Required-Start:    $all</span></div><div class="line"><span class="comment"># Required-Stop:     $all</span></div><div class="line"><span class="comment"># Default-Start:     2 3 4 5</span></div><div class="line"><span class="comment"># Default-Stop:      0 1 6</span></div><div class="line"><span class="comment"># Short-Description: starts the nginx web server</span></div><div class="line"><span class="comment"># Description:       starts nginx using start-stop-daemon</span></div><div class="line"><span class="comment">### END INIT INFO</span></div><div class="line">PATH=/usr/<span class="built_in">local</span>/sbin:/usr/<span class="built_in">local</span>/bin:/sbin:/bin:/usr/sbin:/usr/bin</div><div class="line">DESC=<span class="string">'nginx daemon'</span></div><div class="line">NAME=nginx</div><div class="line">DAEMON=/usr/<span class="built_in">local</span>/webserver/nginx/sbin/<span class="variable">$NAME</span></div><div class="line">CONFIGFILE=/usr/<span class="built_in">local</span>/webserver/nginx/conf/<span class="variable">$NAME</span>.conf</div><div class="line">PIDFILE=/usr/<span class="built_in">local</span>/webserver/nginx/logs/<span class="variable">$NAME</span>.pid</div><div class="line">SCRIPTNAME=/etc/init.d/<span class="variable">$NAME</span></div><div class="line"><span class="built_in">set</span> -e</div><div class="line">[ -x <span class="string">'$DAEMON'</span> ] || <span class="built_in">exit</span> 0</div><div class="line"><span class="function"><span class="title">do_start</span></span>() &#123;</div><div class="line"><span class="variable">$DAEMON</span> -c <span class="variable">$CONFIGFILE</span> || <span class="built_in">echo</span> -n <span class="string">'nginx already running'</span></div><div class="line">&#125;</div><div class="line"><span class="function"><span class="title">do_stop</span></span>() &#123;</div><div class="line"><span class="built_in">kill</span> -INT `cat <span class="variable">$PIDFILE</span>` || <span class="built_in">echo</span> -n <span class="string">'nginx not running'</span></div><div class="line">&#125;</div><div class="line"><span class="function"><span class="title">do_reload</span></span>() &#123;</div><div class="line"><span class="built_in">kill</span> -HUP `cat <span class="variable">$PIDFILE</span>` || <span class="built_in">echo</span> -n <span class="string">'nginx can'</span>t reload<span class="string">'</span></div><div class="line"><span class="string">&#125;</span></div><div class="line"><span class="string">case '</span><span class="variable">$1</span><span class="string">' in</span></div><div class="line"><span class="string">start)</span></div><div class="line"><span class="string">echo -n '</span>Starting <span class="variable">$DESC</span>: <span class="variable">$NAME</span><span class="string">'</span></div><div class="line"><span class="string">do_start</span></div><div class="line"><span class="string">echo '</span>.<span class="string">'</span></div><div class="line"><span class="string">;;</span></div><div class="line"><span class="string">stop)</span></div><div class="line"><span class="string">echo -n '</span>Stopping <span class="variable">$DESC</span>: <span class="variable">$NAME</span><span class="string">'</span></div><div class="line"><span class="string">do_stop</span></div><div class="line"><span class="string">echo '</span>.<span class="string">'</span></div><div class="line"><span class="string">;;</span></div><div class="line"><span class="string">reload|graceful)</span></div><div class="line"><span class="string">echo -n '</span>Reloading <span class="variable">$DESC</span> configuration...<span class="string">'</span></div><div class="line"><span class="string">do_reload</span></div><div class="line"><span class="string">echo '</span>.<span class="string">'</span></div><div class="line"><span class="string">;;</span></div><div class="line"><span class="string">restart)</span></div><div class="line"><span class="string">echo -n '</span>Restarting <span class="variable">$DESC</span>: <span class="variable">$NAME</span><span class="string">'</span></div><div class="line"><span class="string">do_stop</span></div><div class="line"><span class="string">do_start</span></div><div class="line"><span class="string">echo '</span>.<span class="string">'</span></div><div class="line"><span class="string">;;</span></div><div class="line"><span class="string">*)</span></div><div class="line"><span class="string">echo '</span>Usage: <span class="variable">$SCRIPTNAME</span> &#123;start|stop|reload|restart&#125;<span class="string">'  &gt;&amp;2</span></div><div class="line"><span class="string">exit 3</span></div><div class="line"><span class="string">;;</span></div><div class="line"><span class="string">esac</span></div><div class="line"><span class="string">exit 0</span></div></pre></td></tr></table></figure>
+<p>add <em>execute</em> pemission, and set as auto start:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">chmod +x /etc/init.d/nginx</div><div class="line">chkconfig nginx on</div></pre></td></tr></table></figure>
+<h2 id="Environment-Specification"><a href="#Environment-Specification" class="headerlink" title="Environment Specification"></a>Environment Specification</h2><p>Type the following command, and you will get the corresponding result:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">service nginx restart <span class="comment">#restart nginx</span></div><div class="line">service mysqld restart <span class="comment">##restart mysql</span></div><div class="line">service php-fpm restart <span class="comment">##restart php-fpm</span></div><div class="line">service php-fpm stop <span class="comment">#stop php-fpm</span></div><div class="line">service php-fpm start <span class="comment">#start php-fpm</span></div></pre></td></tr></table></figure>
+<p>Directory for website files  <code>/home/wwwroot/</code> Directory for all application <code>/usr/local/webserver/</code></p>
+<p>Locations for each configuration file:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">php: /usr/local/webserver/php/etc/</div><div class="line">mysql: /etc/</div><div class="line">nginx: /usr/local/webserver/nginx/conf/</div></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>Post author:</strong>
+    Solf
+  </li>
+  <li class="post-copyright-link">
+    <strong>Post link:</strong>
+    <a href="http://blog.solf.me/compile-nginx-php-mysql-on-centos-lnmp/" title="Install Nginx 1.0.15 + PHP 5.3.12 + MySQL 5.1.62 on CentOS 6.2">http://blog.solf.me/compile-nginx-php-mysql-on-centos-lnmp/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice: </strong>
+    All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> unless stating additionally.
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/linux/" rel="tag"># linux</a>
+          
+            <a href="/tags/lnmp/" rel="tag"># lnmp</a>
+          
+            <a href="/tags/mysql/" rel="tag"># mysql</a>
+          
+            <a href="/tags/nginx/" rel="tag"># nginx</a>
+          
+            <a href="/tags/php/" rel="tag"># php</a>
+          
+            <a href="/tags/vps/" rel="tag"># vps</a>
+          
+            <a href="/tags/web-hosting/" rel="tag"># web hosting</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/hello-world/" rel="next" title="Hello world!">
+                <i class="fa fa-chevron-left"></i> Hello world!
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/cookie-session-data-transfer-and-sql-injection/" rel="prev" title="Cookie, Session, Data Transfer and SQL Injection">
+                Cookie, Session, Data Transfer and SQL Injection <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Solf" />
+          <p class="site-author-name" itemprop="name">Solf</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+           
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+            
+              <a href="/archives">
+            
+                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">categories</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+          <div class="cc-license motion-element" itemprop="license">
+            <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+              <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons" />
+            </a>
+          </div>
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Prepare"><span class="nav-number">1.</span> <span class="nav-text">Prepare</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Installation"><span class="nav-number">2.</span> <span class="nav-text">Installation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Install-MySQL"><span class="nav-number">2.0.1.</span> <span class="nav-text">Install MySQL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Install-PHP"><span class="nav-number">2.0.2.</span> <span class="nav-text">Install PHP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Install-Nginx"><span class="nav-number">2.0.3.</span> <span class="nav-text">Install Nginx</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Environment-Specification"><span class="nav-number">2.1.</span> <span class="nav-text">Environment Specification</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2012 &mdash; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Solf</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" href="https://hexo.io">Hexo</a></div>
+
+  <span class="post-meta-divider">|</span>
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> </div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://solfy.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://blog.solf.me/compile-nginx-php-mysql-on-centos-lnmp/';
+          this.page.identifier = 'compile-nginx-php-mysql-on-centos-lnmp/';
+          this.page.title = 'Install Nginx 1.0.15 + PHP 5.3.12 + MySQL 5.1.62 on CentOS 6.2';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://solfy.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

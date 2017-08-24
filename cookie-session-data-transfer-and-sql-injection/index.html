@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+
+
+
+
+<html class="theme-next mist" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="mysql,php,security," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="You may misunderstand what is a cookie and what is a session. Because my knowledge is very limited in the PHP world, I’d like to share my experience in other world. Generally speaking, cookie is cooki">
+<meta name="keywords" content="mysql,php,security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cookie, Session, Data Transfer and SQL Injection">
+<meta property="og:url" content="http://blog.solf.me/cookie-session-data-transfer-and-sql-injection/index.html">
+<meta property="og:site_name" content="Solf">
+<meta property="og:description" content="You may misunderstand what is a cookie and what is a session. Because my knowledge is very limited in the PHP world, I’d like to share my experience in other world. Generally speaking, cookie is cooki">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://blog.solf.me/uploads/2012/05/image2012-5-29-9-15-45.png">
+<meta property="og:image" content="http://blog.solf.me/uploads/2012/05/image2012-5-29-9-16-2.png">
+<meta property="og:image" content="http://blog.solf.me/uploads/2012/05/image2012-5-29-9-16-10.png">
+<meta property="og:image" content="http://blog.solf.me/uploads/2012/05/image2012-5-29-9-16-17.png">
+<meta property="og:image" content="http://blog.solf.me/uploads/2012/05/image2012-5-29-9-17-33.png">
+<meta property="og:image" content="http://blog.solf.me/uploads/2012/05/image2012-5-29-9-17-23.png">
+<meta property="og:updated_time" content="2017-08-24T12:23:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cookie, Session, Data Transfer and SQL Injection">
+<meta name="twitter:description" content="You may misunderstand what is a cookie and what is a session. Because my knowledge is very limited in the PHP world, I’d like to share my experience in other world. Generally speaking, cookie is cooki">
+<meta name="twitter:image" content="http://blog.solf.me/uploads/2012/05/image2012-5-29-9-15-45.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.2',
+    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: false,
+    duoshuo: {
+      userId: 'undefined',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: 'D9ZAJJELF1',
+      apiKey: 'c1b017133a91550d14711217ef2884d7',
+      indexName: 'solfy',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://blog.solf.me/cookie-session-data-transfer-and-sql-injection/"/>
+
+
+
+
+
+  <title>Cookie, Session, Data Transfer and SQL Injection | Solf</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-24293351-2', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Solf</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description"></h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            Search
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.solf.me/cookie-session-data-transfer-and-sql-injection/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Solf">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Solf">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Cookie, Session, Data Transfer and SQL Injection</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2012-05-29T04:11:39+10:00">
+                29-05-2012
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Sharing/" itemprop="url" rel="index">
+                    <span itemprop="name">Sharing</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/cookie-session-data-transfer-and-sql-injection/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="cookie-session-data-transfer-and-sql-injection/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>You may misunderstand what is a cookie and what is a session. Because my knowledge is very limited in the PHP world, I’d like to share my experience in other world.</p>
+<p>Generally speaking, cookie is cookie, session is session, they are totally different topics. So hijacking cookie has nothing to do with hijacking session.</p>
+<p><strong>What are session, cookie and data transfer?</strong></p>
+<p>“A session is defined as the period of time that a unique user interacts with a Web application.” - from MSDN</p>
+<p>It looks like that it is a cookie, isn’t it? No, it’s not. It only defines <strong>a behaviour</strong> or <strong>an event</strong>. So many kinds of technologies could be used for SESSION.</p>
+<p>Cookie is just one of them, which is proved to be unsafe already. From many years ago, we’ve stopped using cookie to store any confidential information in the production environment. I think even a rookie programmer will know this basic rule.</p>
+<p>If cookie is not safe, what we use to store information more safely? From .Net 1.1, we use two kinds of Cookieless session consisting of .Net Session and SQL Server Session. Both of them use the different technology from Cookie.</p>
+<p>.Net Session is HTTP only and stored at server side so that it cannot be read from javascript. Although it could be changed by javascript, it is nearly impossible for a hacker to guess an unique session id. ASP.NET is designed with the XSS weakness in mind - the session ID is suitably long and hard to predict.</p>
+<p>.Net Session is an in-memory session, which is not very stable. For a more reliable requirement, a SQL Server session could be used instead.</p>
+<a id="more"></a>
+<p>I remembered Nigle mentioned we could write some session information in the URL parameters. Actually it is out of the scope of SESSION. I think it belongs to how to transfer data between different pages. Obviously SESSION is very suitable for this purpose. However, it doesn’t mean session is the only way to achieve our goal. We could use sever transfer and http request as well. That’s why I mentioned GET and Post in today’s seminar. Because embed session information in the URL using GET is not very safe as well.</p>
+<p>As for the XSS example demonstrated by George, it is very helpful and useful. But I cannot understand why you all thought it is a serious problem at that moment. After the meeting, finally I realized because you are using PHP rather than .Net. I didn’t have concern about this problem before, because such a behaviour is not allowed by default in ASP.net. I write a simple asp.net page with cookies for test.</p>
+<p><a href="/uploads/2012/05/image2012-5-29-9-15-45.png"><img src="/uploads/2012/05/image2012-5-29-9-15-45.png" alt=""></a></p>
+<p>Then launch the website, create a cookie and try to access the value through the url.</p>
+<p><a href="/uploads/2012/05/image2012-5-29-9-16-2.png"><img src="/uploads/2012/05/image2012-5-29-9-16-2.png" alt=""></a></p>
+<p>An exception will be thrown out as the picture.</p>
+<p><a href="/uploads/2012/05/image2012-5-29-9-16-10.png"><img src="/uploads/2012/05/image2012-5-29-9-16-10.png" alt=""></a></p>
+<p>If try to write script to a text box and post it to the server, an exception will be thrown out as well.</p>
+<p><a href="/uploads/2012/05/image2012-5-29-9-16-17.png"><img src="/uploads/2012/05/image2012-5-29-9-16-17.png" alt=""></a></p>
+<p>As you can see, both of them are server errors which means the server has validated them automatically.</p>
+<p>If we meet these errors in the testing, we should know what the problem is easily.</p>
+<p>Now I show you another example. In the first page, I write a HTTP only session (.Net inproc session), and then browse to the second page.</p>
+<p><a href="/uploads/2012/05/image2012-5-29-9-17-33.png"><img src="/uploads/2012/05/image2012-5-29-9-17-33.png" alt=""></a></p>
+<p>I write a script to try to read the cookie. It can only read the content of the normal cookie here.</p>
+<p><a href="/uploads/2012/05/image2012-5-29-9-17-23.png"><img src="/uploads/2012/05/image2012-5-29-9-17-23.png" alt=""></a></p>
+<p>I don’t think only .Net has the solution for HTTP Only session and server validation. There also should be similar solutions in PHP. However, Page redirection ≠ Data transfer ≠ Session ≠ Cookie</p>
+<p><strong>SQL Injection</strong></p>
+<p>We have an interesting discussion about how to write a correct sql query code at the meeting. I used to use Parameter Collection or Parameter Statement in C# and Java. I know it can prevent this kind of injection but I don’t know why. So I did some research using my diablo time.</p>
+<p>From MSDN, it said SqlParameterCollection provide type checking and length validation. If you use a parameters collection, input is treated as a literal value, and SQL Server does not treat it as executable code.</p>
+<p>So how can it achieve this?</p>
+<p>Here are some interesting posts which explain this.</p>
+<p><a href="http://stackoverflow.com/questions/4892166/how-does-sqlparameter-prevent-sql-injection" target="_blank" rel="external">http://stackoverflow.com/questions/4892166/how-does-sqlparameter-prevent-sql-injection</a></p>
+<p><a href="http://msdn.microsoft.com/en-us/library/ms188001.aspx" target="_blank" rel="external">http://msdn.microsoft.com/en-us/library/ms188001.aspx</a></p>
+<p>From MYSQL 5.0, there is a similar solution as MS SQLSERVER.</p>
+<p><a href="http://dev.mysql.com/doc/refman/5.0/en/sql-syntax-prepared-statements.html" target="_blank" rel="external">http://dev.mysql.com/doc/refman/5.0/en/sql-syntax-prepared-statements.html</a></p>
+<p>I reckon PDO uses MYSQL’s mechanism to prevent injection, because it must use database-specific PDO driver to access a database server.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>Post author:</strong>
+    Solf
+  </li>
+  <li class="post-copyright-link">
+    <strong>Post link:</strong>
+    <a href="http://blog.solf.me/cookie-session-data-transfer-and-sql-injection/" title="Cookie, Session, Data Transfer and SQL Injection">http://blog.solf.me/cookie-session-data-transfer-and-sql-injection/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice: </strong>
+    All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> unless stating additionally.
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/mysql/" rel="tag"># mysql</a>
+          
+            <a href="/tags/php/" rel="tag"># php</a>
+          
+            <a href="/tags/security/" rel="tag"># security</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/compile-nginx-php-mysql-on-centos-lnmp/" rel="next" title="Install Nginx 1.0.15 + PHP 5.3.12 + MySQL 5.1.62 on CentOS 6.2">
+                <i class="fa fa-chevron-left"></i> Install Nginx 1.0.15 + PHP 5.3.12 + MySQL 5.1.62 on CentOS 6.2
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/install-fiber-channel-in-openfiler-2-99/" rel="prev" title="Install Fiber Channel in Openfiler 2.99">
+                Install Fiber Channel in Openfiler 2.99 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Solf" />
+          <p class="site-author-name" itemprop="name">Solf</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+           
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+            
+              <a href="/archives">
+            
+                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">categories</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+          <div class="cc-license motion-element" itemprop="license">
+            <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+              <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons" />
+            </a>
+          </div>
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2012 &mdash; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Solf</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" href="https://hexo.io">Hexo</a></div>
+
+  <span class="post-meta-divider">|</span>
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> </div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://solfy.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://blog.solf.me/cookie-session-data-transfer-and-sql-injection/';
+          this.page.identifier = 'cookie-session-data-transfer-and-sql-injection/';
+          this.page.title = 'Cookie, Session, Data Transfer and SQL Injection';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://solfy.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.2"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
